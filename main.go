@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-func encodeRFC2047(String string) string {
-	// use mail's rfc2047 to encode any string
-	addr := mail.Address{Name: String, Address: ""}
-	return strings.Trim(addr.String(), " <>")
-}
-
 func main() {
 	const required = "REQUIRED"
 
@@ -40,8 +34,11 @@ func main() {
 	)
 
 	log.Println("Creating email")
-	from := mail.Address{Name: *fromEmail, Address: *fromEmail}
-	to := mail.Address{Name: *toEmail, Address: *toEmail}
+	fromName := strings.Split(*fromEmail, "@")[0]
+	toName := strings.Split(*toEmail, "@")[0]
+
+	from := mail.Address{Name: fromName, Address: *fromEmail}
+	to := mail.Address{Name: toName, Address: *toEmail}
 
 	title := "SendGrid SMTP Test"
 	body := "This email has been sent via SMTP through SendGrid"
@@ -49,7 +46,7 @@ func main() {
 	header := make(map[string]string)
 	header["From"] = from.String()
 	header["To"] = to.String()
-	header["Subject"] = encodeRFC2047(title)
+	header["Subject"] = title
 	header["MIME-Version"] = "1.0"
 	header["Content-Type"] = "text/plain; charset=\"utf-8\""
 	header["Content-Transfer-Encoding"] = "base64"
@@ -60,7 +57,7 @@ func main() {
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
 
-	log.Printf("Sending email to %s\n", to.Address)
+	log.Printf("Sending email to %s from %s\n", to.Address, from.Address)
 	err := smtp.SendMail(
 		"smtp.sendgrid.net:587",
 		auth,
