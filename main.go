@@ -11,7 +11,6 @@ import (
 )
 
 const smtpServer = "smtp.sendgrid.net"
-const smtpPort = 587
 
 func main() {
 	const required = "REQUIRED"
@@ -20,6 +19,7 @@ func main() {
 	apiKey := flag.String("apiKey", required, "Password to connect to the SendGrid API")
 	fromEmail := flag.String("fromEmail", required, "Sender of the test email")
 	toEmail := flag.String("toEmail", required, "Recipient of the test email")
+    smtpPort := flag.String("smtpPort", "587", "SendGrid SMTP port")
 	flag.Parse()
 
 	if *apiUser == required || *apiKey == required || *fromEmail == required || *toEmail == required {
@@ -60,9 +60,9 @@ func main() {
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
     
-	log.Printf("Sending email to %s from %s\n", to.Address, from.Address)
+	log.Printf("Sending email to %s from %s through %s:%s\n", to.Address, from.Address, smtpServer, *smtpPort)
 	err := smtp.SendMail(
-		fmt.Sprintf("%s:%d", smtpServer, smtpPort),
+		fmt.Sprintf("%s:%s", smtpServer, *smtpPort),
 		auth,
 		from.Address,
 		[]string{to.Address},
@@ -71,7 +71,9 @@ func main() {
 
 	if err != nil {
 		log.Fatal(err)
-	}
+	} else {
+        log.Println("Email sent successfully")
+    }
 
 	log.Println("Finished")
 }
