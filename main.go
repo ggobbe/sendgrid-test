@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+const smtpServer = "smtp.sendgrid.net"
+const smtpPort = 587
+
 func main() {
 	const required = "REQUIRED"
 
@@ -30,7 +33,7 @@ func main() {
 		"",
 		*apiUser,
 		*apiKey,
-		"smtp.sendgrid.net",
+		smtpServer,
 	)
 
 	log.Println("Creating email")
@@ -40,8 +43,8 @@ func main() {
 	from := mail.Address{Name: fromName, Address: *fromEmail}
 	to := mail.Address{Name: toName, Address: *toEmail}
 
-	title := "SendGrid SMTP Test"
-	body := "This email has been sent via SMTP through SendGrid"
+	const title = "SendGrid SMTP Test"
+	const body = "This email has been sent via SMTP through SendGrid"
 
 	header := make(map[string]string)
 	header["From"] = from.String()
@@ -56,10 +59,10 @@ func main() {
 		message += fmt.Sprintf("%s: %s\r\n", k, v)
 	}
 	message += "\r\n" + base64.StdEncoding.EncodeToString([]byte(body))
-
+    
 	log.Printf("Sending email to %s from %s\n", to.Address, from.Address)
 	err := smtp.SendMail(
-		"smtp.sendgrid.net:587",
+		fmt.Sprintf("%s:%d", smtpServer, smtpPort),
 		auth,
 		from.Address,
 		[]string{to.Address},
